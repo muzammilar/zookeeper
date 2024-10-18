@@ -730,7 +730,7 @@ static void setup_random()
             /* Assert we either read something or we were interrupted due to a
              * signal (errno == EINTR) in which case we need to retry.
              */
-            int rc = read(fd, &seed + seed_len, sizeof(seed) - seed_len);
+            int rc = read(fd, (char *)&seed + seed_len, sizeof(seed) - seed_len);
             assert(rc > 0 || errno == EINTR);
             if (rc > 0) {
                 seed_len += rc;
@@ -2558,8 +2558,9 @@ int zookeeper_interest(zhandle_t *zh, socket_t *fd, int *interest,
             *tv = get_timeval(zh->recv_timeout/60);
             zh->delay = 0;
 
-            LOG_WARN(LOGCALLBACK(zh), "Delaying connection after exhaustively trying all servers [%s]",
-                     zh->hostname);
+            lock_reconfig(zh);
+            LOG_WARN(LOGCALLBACK(zh), "Delaying connection after exhaustively trying all servers [%s]", zh->hostname);
+            unlock_reconfig(zh);
         } else {
             if (addr_rw_server) {
                 zh->addr_cur = *addr_rw_server;
