@@ -60,6 +60,7 @@ public class ZxidRolloverTest extends ZKTestCase {
     @BeforeEach
     public void setUp() throws Exception {
         System.setProperty("zookeeper.admin.enableServer", "false");
+        System.setProperty("zookeeper.test.allowDiscontinuousProposals", "true");
 
         // set the snap count to something low so that we force log rollover
         // and verify that is working as part of the epoch rollover.
@@ -192,7 +193,7 @@ public class ZxidRolloverTest extends ZKTestCase {
         assertTrue(ClientBase.waitForServerDown("127.0.0.1:" + peer.clientPort, ClientBase.CONNECTION_TIMEOUT),
                 "Waiting for server down");
 
-        // if idx is the the leader then everyone will get disconnected,
+        // if idx is the leader then everyone will get disconnected,
         // otherwise if idx is a follower then just that client will get
         // disconnected
         if (idx == idxLeader) {
@@ -215,6 +216,7 @@ public class ZxidRolloverTest extends ZKTestCase {
 
     @AfterEach
     public void tearDown() throws Exception {
+        System.clearProperty("zookeeper.test.allowDiscontinuousProposals");
         LOG.info("tearDown starting");
         for (int i = 0; i < zkClients.length; i++) {
             zkClients[i].close();
